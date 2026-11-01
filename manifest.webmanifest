@@ -1,0 +1,16 @@
+{
+  "name": "こころの整理ノート",
+  "short_name": "こころ整理",
+  "description": "認知行動療法・ストレス対処・痛みの記録ツール",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef1ec",
+  "theme_color": "#8fa89a",
+  "lang": "ja",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
