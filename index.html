@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>こころの整理ノート</title>
+<style>
+:root{
+  --bg:#eef1ec;--surface:#f8f9f5;--ink:#3b4541;--sub:#6b766f;--line:#d5dcd3;
+  --sage:#8fa89a;--sage-d:#4f6d5f;--fact:#a9bfd0;--fact-bg:#e6eef4;--interp:#d9b8b0;--interp-bg:#f6e9e5;
+  --warn:#a5584b;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1f2523;--surface:#293230;--ink:#e3e9e4;--sub:#a1aca5;--line:#3d4743;
+  --sage:#6f8b7d;--sage-d:#a8c7b8;--fact:#5d7a8e;--fact-bg:#27343d;--interp:#9b6f66;--interp-bg:#3a2d2b;--warn:#e0968a;}}
+:root[data-theme="dark"]{
+  --bg:#1f2523;--surface:#293230;--ink:#e3e9e4;--sub:#a1aca5;--line:#3d4743;
+  --sage:#6f8b7d;--sage-d:#a8c7b8;--fact:#5d7a8e;--fact-bg:#27343d;--interp:#9b6f66;--interp-bg:#3a2d2b;--warn:#e0968a;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;line-height:1.8;font-size:16px}
+header{padding:28px 20px 8px;max-width:860px;margin:0 auto}
+h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:.04em}
+header p{margin:0;color:var(--sub);font-size:.92rem}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav div{max-width:860px;margin:0 auto;display:flex;gap:4px;padding:8px 12px;overflow-x:auto}
+nav button{flex:1 0 auto;border:0;background:transparent;color:var(--sub);font:inherit;font-size:.9rem;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{background:var(--sage);color:#fff}
+main{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+section{display:none}section.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
+h2{font-size:1.15rem;margin:0 0 6px}
+.hint{color:var(--sub);font-size:.88rem;margin:0 0 14px}
+label{display:block;font-weight:600;font-size:.95rem;margin-bottom:4px}
+textarea,input[type=text]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:12px;resize:vertical}
+textarea:focus,input:focus,button:focus-visible{outline:3px solid var(--sage);outline-offset:2px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.cols{grid-template-columns:1fr}}
+.col{border-radius:14px;padding:14px}
+.col.f{background:var(--fact-bg);border-left:5px solid var(--fact)}
+.col.i{background:var(--interp-bg);border-left:5px solid var(--interp)}
+.col textarea{background:var(--surface);min-height:130px}
+.btn{border:0;background:var(--sage-d);color:#fff;font:inherit;font-weight:600;padding:12px 22px;border-radius:999px;cursor:pointer}
+:root[data-theme="dark"] .btn,:root:not([data-theme="light"]) .btn{color:#14201a}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .btn{color:#fff}}
+.btn.ghost{background:transparent;color:var(--sage-d);border:1.5px solid var(--sage)}
+.btn.small{padding:6px 14px;font-size:.85rem}
+.btn.del{background:transparent;color:var(--warn);border:1.5px solid var(--warn)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.timer{font-size:3.6rem;text-align:center;font-variant-numeric:tabular-nums;margin:8px 0;letter-spacing:.06em}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--sage);transition:width 1s linear}
+.task{margin-top:18px;padding:18px;border-radius:14px;background:var(--fact-bg);text-align:center;font-size:1.1rem;min-height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+.count{font-size:2rem;font-weight:700}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:.88rem;padding:6px 14px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--sage);border-color:var(--sage);color:#fff}
+.cope{padding:22px;border-radius:16px;background:var(--interp-bg);margin-top:16px;text-align:center}
+.cope small{color:var(--sub)}.cope strong{display:block;font-size:1.25rem;margin:6px 0}
+ul.list{list-style:none;margin:0;padding:0}
+ul.list li{padding:10px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:10px;font-size:.93rem}
+.rec h3{margin:0 0 2px;font-size:1rem}.rec time{color:var(--sub);font-size:.8rem}
+.rec dl{margin:10px 0 0}.rec dt{font-size:.8rem;font-weight:700;color:var(--sub)}.rec dd{margin:0 0 8px;white-space:pre-wrap}
+.empty{color:var(--sub);text-align:center;padding:30px 0}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--sage-d);color:#fff;padding:10px 20px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .3s}
+.toast.on{opacity:1}
+.eg{margin:0 0 10px;border-radius:12px;background:var(--surface);border:1px solid var(--line);overflow:hidden}.eg summary{cursor:pointer;padding:10px 14px;font-size:.88rem;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}.eg summary::-webkit-details-marker{display:none}.eg summary::after{content:"＋";color:var(--sub);font-weight:400}.eg[open] summary::after{content:"－"}.eg ul{list-style:none;margin:0;padding:0 10px 6px;display:grid;gap:6px}.eg li button{width:100%;text-align:left;font:inherit;font-size:.85rem;line-height:1.6;color:var(--ink);background:var(--bg);border:0;border-left:3px solid var(--fact);border-radius:8px;padding:8px 10px;cursor:pointer}.eg.e-i li button{border-left-color:var(--interp)}.eg li button:hover{filter:brightness(.97)}.eg small{display:block;padding:2px 14px 10px;color:var(--sub);font-size:.76rem}
+.chks{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 18px}.chk{position:relative}.chk input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}.chk span{display:inline-block;padding:7px 14px;border:1.5px solid var(--line);border-radius:999px;background:var(--bg);font-size:.9rem}.chk input:checked+span{background:var(--sage-d);border-color:var(--sage-d);color:var(--bg)}.chk input:focus-visible+span{outline:3px solid var(--sage);outline-offset:2px}
+.nrs{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:6px}.nrs button{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;padding:10px 0;border-radius:8px;cursor:pointer}.nrs button[aria-pressed="true"]{background:var(--sage-d);border-color:var(--sage-d);color:var(--bg);font-weight:700}@media(max-width:480px){.nrs{grid-template-columns:repeat(6,1fr)}}
+.nrsl{display:flex;justify-content:space-between;gap:8px;font-size:.78rem;color:var(--sub);margin:6px 0 18px}.nrsl b{color:var(--ink)}
+.g{margin-bottom:18px}.g>textarea{min-height:80px}
+.qg{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;margin:6px 0 20px}.qg button{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:.92rem;line-height:1.4;padding:12px 6px;border-radius:14px;cursor:pointer}.qg button[aria-pressed="true"]{background:var(--sage-d);border-color:var(--sage-d);color:var(--bg)}.qg .em{display:block;font-size:1.6rem}
+.tl{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line)}.tl li{position:relative;padding:8px 0 8px 12px;font-size:.92rem;display:flex;justify-content:space-between;align-items:center;gap:8px}.tl li::before{content:"";position:absolute;left:-24px;top:18px;width:10px;height:10px;border-radius:50%;background:var(--sage)}.tl li.empty{display:block;padding-left:0}.tl li.empty::before{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#8fa89a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="こころ整理">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
+<header>
+  <h1>こころの整理ノート</h1>
+  <p>書き出して、離れて、整える。いまの気持ちに合わせて使ってください。</p>
+</header>
+<nav><div role="tablist">
+  <button role="tab" aria-selected="true" data-t="ws">事実と解釈</button>
+  <button role="tab" aria-selected="false" data-t="tm">2分リセット</button>
+  <button role="tab" aria-selected="false" data-t="cp">対処法</button>
+  <button role="tab" aria-selected="false" data-t="bd">身体の痛み</button>
+  <button role="tab" aria-selected="false" data-t="qk">クイック</button>
+  <button role="tab" aria-selected="false" data-t="lg">記録<span id="cnt"></span></button>
+</div></nav>
+<main>
+
+<section id="ws" class="on">
+  <div class="card">
+    <h2>事実と解釈を分けて書く</h2>
+    <p class="hint">「誰が見ても同じ」ことと、「自分がそう感じた・推測した」ことを別々に書きます。</p>
+    <label for="ttl">出来事のひとこと（任意）</label>
+    <input type="text" id="ttl" placeholder="例：上司からの返信が遅い" style="margin-bottom:14px">
+    <div class="cols">
+      <div class="col f"><label for="fact">起こった事実</label>
+        <details class="eg" open><summary>書き方の例</summary><ul><li><button type="button" data-ins="fact">今朝9時に上司へメールを送った。15時の時点で返信はない。</button></li><li><button type="button" data-ins="fact">会議で私が発言したあと、Aさんは何も言わなかった。</button></li><li><button type="button" data-ins="fact">友人にLINEを送って、2日間既読がついていない。</button></li></ul><small>タップすると入力欄に追加できます</small></details>
+        <textarea id="fact" placeholder="いつ・どこで・何が起きたか。見聞きしたことだけ。"></textarea></div>
+      <div class="col i"><label for="interp">自分の解釈・推測</label>
+        <details class="eg e-i" open><summary>書き方の例</summary><ul><li><button type="button" data-ins="interp">私のメールを後回しにされている。軽く見られているのかもしれない。</button></li><li><button type="button" data-ins="interp">発言が的外れで、Aさんにあきれられたに違いない。</button></li><li><button type="button" data-ins="interp">何か悪いことを言って、嫌われてしまったのだと思う。</button></li></ul><small>タップすると入力欄に追加できます</small></details>
+        <textarea id="interp" placeholder="そこから思ったこと、心配していること。"></textarea></div>
+    </div>
+    <div class="card" style="margin:14px 0 0;background:var(--bg)">
+      <label for="alt">別の見方をするなら？（任意）</label>
+      <p class="hint" style="margin-bottom:8px">友人が同じ状況なら、何と声をかけますか。他に考えられる理由はありますか。</p>
+      <textarea id="alt" style="min-height:80px"></textarea>
+    </div>
+    <div class="row"><button class="btn" id="save">この内容を保存</button><button class="btn ghost" id="clr">入力をクリア</button></div>
+  </div>
+</section>
+
+<section id="tm">
+  <div class="card">
+    <h2>反芻思考を止める2分間</h2>
+    <p class="hint">同じ考えがぐるぐるするとき。タイマーを動かして、目の前の課題に意識を向けましょう。</p>
+    <div class="timer" id="clock" aria-live="off">2:00</div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="go">スタート</button>
+      <button class="btn ghost" id="rs">リセット</button>
+    </div>
+    <div class="tabs" style="margin:18px 0 0;justify-content:center">
+      <button class="chip" data-m="color" aria-pressed="true">色を数える</button>
+      <button class="chip" data-m="q" aria-pressed="false">ランダムな質問</button>
+      <button class="chip" data-m="sub" aria-pressed="false">7ずつ引き算</button>
+    </div>
+    <div class="task" id="task"><span>スタートを押すと課題が出ます</span></div>
+  </div>
+</section>
+
+<section id="cp">
+  <div class="card">
+    <h2>対処法を1つ提案します</h2>
+    <p class="hint">考えすぎて選べないときは、出た1つだけ試してみてください。</p>
+    <div class="tabs" id="cats">
+      <button class="chip" data-c="all" aria-pressed="true">おまかせ</button>
+      <button class="chip" data-c="身体" aria-pressed="false">身体的</button>
+      <button class="chip" data-c="認知" aria-pressed="false">認知的</button>
+      <button class="chip" data-c="行動" aria-pressed="false">行動的</button>
+    </div>
+    <button class="btn" id="pick">提案してもらう</button>
+    <div class="cope" id="cope"><small>ボタンを押してください</small></div>
+    <div class="row" id="mine" style="display:none"><button class="btn ghost small" id="fav">お気に入りに追加</button></div>
+  </div>
+  <div class="card">
+    <h2>お気に入り</h2>
+    <ul class="list" id="favs"></ul>
+  </div>
+  <div class="card">
+    <h2>自分の対処法を追加</h2>
+    <label for="mycat" class="hint" style="margin-bottom:6px">カテゴリ</label>
+    <div class="tabs" id="addcats">
+      <button class="chip" data-c="身体" aria-pressed="true">身体的</button>
+      <button class="chip" data-c="認知" aria-pressed="false">認知的</button>
+      <button class="chip" data-c="行動" aria-pressed="false">行動的</button>
+    </div>
+    <input type="text" id="mytxt" placeholder="例：好きな曲を1曲聴く">
+    <div class="row"><button class="btn" id="add">追加</button></div>
+    <ul class="list" id="custom" style="margin-top:10px"></ul>
+  </div>
+</section>
+
+<section id="bd">
+  <div class="card">
+    <h2>身体の痛み・違和感を記録</h2>
+    <p class="hint">痛みと、そのときの考えや状況をセットで残すと、心との関係が見えてきます。</p>
+    <div class="g"><label>痛む部位（複数選択できます）</label><div class="chks" id="parts" style="margin-bottom:0"></div></div>
+    <div class="g"><label>痛みの強さ（0〜10）</label><div class="nrs" id="nrs"></div>
+      <div class="nrsl"><span>0 痛まない</span><b id="nrsv">未選択</b><span>10 想像できる最大の痛み</span></div></div>
+    <div class="g"><label>痛みの質（複数選択できます）</label><div class="chks" id="quals" style="margin-bottom:0"></div></div>
+    <div class="g"><label for="bt">きっかけ・状況</label><textarea id="bt" placeholder="どんな時に痛む？ 直前の出来事や気分は？"></textarea></div>
+    <div class="g"><label for="bc">痛みを感じたときの考え</label><textarea id="bc" placeholder="例：このまま悪化するのでは、と心配になった。"></textarea></div>
+    <div class="g"><label for="bh">やってみた対処</label><textarea id="bh" placeholder="温める・休む・ストレッチ・薬など。効果もひとこと。"></textarea></div>
+    <div class="row"><button class="btn" id="bsave">身体の記録を保存</button></div>
+  </div>
+  <div class="card"><h2>身体の記録</h2><div id="bl"></div></div>
+</section>
+
+<section id="qk">
+  <div class="card">
+    <h2>クイックチェック</h2>
+    <p class="hint">文字入力なし。3つ選んで「記録する」を押すだけです。日時は自動で入ります。</p>
+    <label>痛む時間帯</label><div class="qg" id="qt"></div>
+    <label>痛みの度合い</label><div class="qg" id="qp"></div>
+    <label>メンタルの調子</label><div class="qg" id="qm"></div>
+    <button class="btn" id="qsave">記録する</button>
+  </div>
+  <div class="card"><h2>タイムライン</h2><ul class="tl" id="qtl"></ul>
+    <div class="row"><button class="btn del small" id="qdel">すべて削除</button></div></div>
+</section>
+
+<section id="lg">
+  <div class="card">
+    <h2>これまでの記録</h2>
+    <p class="hint">内容はこの端末のブラウザ内にだけ保存されます。</p>
+    <div id="recs"></div>
+    <div class="row"><button class="btn del small" id="delall">すべて削除</button></div>
+  </div>
+  <div class="card">
+    <h2>フォルダ連携（自動同期）</h2>
+    <p class="hint">PCのChrome・Edgeで使えます。選んだフォルダに <b>kokoro-note-sync.json</b> を保存し、記録の追加・削除のたびに自動で同期します。OneDrive・Googleドライブ・iCloud・Dropboxなどの同期フォルダを選ぶと、ほかの端末と共有できます。</p>
+    <div class="row" style="margin-top:0"><button class="btn" id="fdir">フォルダを選ぶ</button><button class="btn ghost" id="fnow" hidden>今すぐ同期</button><button class="btn del small" id="foff" hidden>連携を解除</button></div>
+    <p class="hint" id="fst" role="status" style="margin:10px 0 0"></p>
+  </div>
+  <div class="card">
+    <h2>バックアップと端末間の共有</h2>
+    <p class="hint">記録をファイルに書き出し、iCloud・Googleドライブなどの同期フォルダに置くと、別の端末で読み込んで合流できます。同じ記録は重複しません。</p>
+    <div class="row" style="margin-top:0"><button class="btn" id="exp">記録を書き出す</button><button class="btn ghost" id="impb">記録を読み込む</button><button class="btn ghost" id="csv">通院用CSV</button></div>
+    <input type="file" id="imp" accept=".json,application/json" hidden>
+    <p class="hint" id="impres" role="status" style="margin:10px 0 0"></p>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)},$$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+  var mem={};
+  function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return mem[k]!==undefined?mem[k]:d}}
+  var quiet=false,onTouch=function(){};
+  function save(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(!quiet&&k!=='kn_upd'&&k!=='kn_sync'){save('kn_upd',Date.now());onTouch()}}
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},1800)}
+  function rnd(a){return a[Math.floor(Math.random()*a.length)]}
+
+  /* tabs */
+  $$('nav button').forEach(function(b){b.onclick=function(){
+    $$('nav button').forEach(function(x){x.setAttribute('aria-selected',x===b)});
+    $$('section').forEach(function(s){s.classList.toggle('on',s.id===b.dataset.t)});
+    window.scrollTo(0,0)}});
+
+  /* records */
+  var recs=load('kn_recs',[]);
+  function renderRecs(){
+    $('#cnt').textContent=recs.length?'（'+recs.length+'）':'';
+    var h='';
+    recs.forEach(function(r,i){
+      h+='<div class="card rec"><h3>'+esc(r.title||'無題')+'</h3><time>'+esc(r.date)+'</time><dl>'
+        +'<dt>事実</dt><dd>'+esc(r.fact||'—')+'</dd><dt>解釈</dt><dd>'+esc(r.interp||'—')+'</dd>'
+        +(r.alt?'<dt>別の見方</dt><dd>'+esc(r.alt)+'</dd>':'')+'</dl>'
+        +'<button class="btn del small" data-i="'+i+'">削除</button></div>'});
+    $('#recs').innerHTML=h||'<p class="empty">まだ記録がありません。<br>「事実と解釈」から保存できます。</p>';
+    $$('#recs .del').forEach(function(b){b.onclick=function(){
+      if(confirm('この記録を削除しますか？')){recs.splice(+b.dataset.i,1);save('kn_recs',recs);renderRecs();toast('削除しました')}}});
+  }
+  $('#save').onclick=function(){
+    var f=$('#fact').value.trim(),i=$('#interp').value.trim();
+    if(!f&&!i){toast('事実か解釈を入力してください');return}
+    recs.unshift({title:$('#ttl').value.trim(),fact:f,interp:i,alt:$('#alt').value.trim(),date:new Date().toLocaleString('ja-JP')});
+    save('kn_recs',recs);renderRecs();clearForm();toast('保存しました')};
+  function clearForm(){['#ttl','#fact','#interp','#alt'].forEach(function(s){$(s).value=''})}
+  $('#clr').onclick=clearForm;
+  $('#delall').onclick=function(){if(recs.length&&confirm('記録をすべて削除しますか？元に戻せません。')){recs=[];save('kn_recs',recs);renderRecs();toast('すべて削除しました')}};
+
+  /* timer */
+  var TOTAL=120,left=TOTAL,iv=null,mode='color',taskTimer=null;
+  function fmt(s){return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
+  function draw(){$('#clock').textContent=fmt(left);$('#prog').style.width=((TOTAL-left)/TOTAL*100)+'%'}
+  var COLORS=['青','赤','緑','黄色','白','茶色','黒','オレンジ','ピンク','紫'];
+  var QS=['いま見える丸いものは何ですか？','最後に食べた美味しいものは？','好きな動物を1つ挙げて、その理由は？','今日聞こえた音を3つ挙げてください','行ってみたい場所を1つ思い浮かべて','手に触れているものの質感を説明してみて','「あ」で始まる言葉を5つ挙げてください','子どもの頃の好きな遊びは？','いま部屋にある四角いものを5つ数えて','好きな季節とその理由は？'];
+  var subN=100;
+  function newTask(){
+    var t=$('#task');
+    if(mode==='color'){var c=rnd(COLORS);t.innerHTML='<span>まわりを見渡して</span><span class="count">「'+c+'」のものを探して数える</span><small>見つけたら心の中で数えましょう</small>'}
+    else if(mode==='q'){t.innerHTML='<span>'+rnd(QS)+'</span><button class="btn ghost small" id="nx">別の質問</button>';$('#nx').onclick=newTask}
+    else{t.innerHTML='<span>'+subN+' − 7 = ？</span><button class="btn ghost small" id="nx">次へ</button>';$('#nx').onclick=function(){subN-=7;if(subN<7)subN=100;newTask()}}
+  }
+  $$('[data-m]').forEach(function(b){b.onclick=function(){
+    $$('[data-m]').forEach(function(x){x.setAttribute('aria-pressed',x===b)});mode=b.dataset.m;subN=100;if(iv)newTask()}});
+  function stop(){clearInterval(iv);iv=null;clearInterval(taskTimer);$('#go').textContent=left===0||left===TOTAL?'スタート':'再開'}
+  $('#go').onclick=function(){
+    if(iv){stop();return}
+    if(left===0)left=TOTAL;
+    $('#go').textContent='一時停止';newTask();
+    taskTimer=mode==='color'?setInterval(newTask,30000):null;
+    iv=setInterval(function(){left--;draw();
+      if(left<=0){stop();left=0;draw();$('#task').innerHTML='<span class="count">おつかれさま</span><span>深呼吸を1回。いまの気分はどう変わりましたか？</span>';$('#go').textContent='もう一度';if(navigator.vibrate){try{navigator.vibrate(200)}catch(e){}}}},1000)};
+  $('#rs').onclick=function(){stop();left=TOTAL;draw();$('#go').textContent='スタート';$('#task').innerHTML='<span>スタートを押すと課題が出ます</span>'};
+
+  /* coping */
+  var BASE=[
+    {c:'身体',t:'ゆっくり4秒吸って、6秒かけて吐く呼吸を5回'},
+    {c:'身体',t:'肩をすくめて10秒キープ、ストンと脱力'},
+    {c:'身体',t:'冷たい水を一杯、ゆっくり飲む'},
+    {c:'身体',t:'席を立って、首と肩を軽くまわす'},
+    {c:'身体',t:'足の裏の感覚に3分間意識を向ける'},
+    {c:'認知',t:'「これは事実？推測？」と自分に問いかける'},
+    {c:'認知',t:'3年後の自分から見て、この出来事はどれくらい大きい？'},
+    {c:'認知',t:'うまくいっていることを3つ書き出す'},
+    {c:'認知',t:'親友が同じ悩みを話したら、何と声をかけるか考える'},
+    {c:'認知',t:'「〜すべき」を「〜できたらいいな」に言い換える'},
+    {c:'行動',t:'5分だけ外を歩く'},
+    {c:'行動',t:'机の上を1か所だけ片づける'},
+    {c:'行動',t:'好きな音楽を1曲、集中して聴く'},
+    {c:'行動',t:'信頼できる人に「ちょっと話したい」と連絡する'},
+    {c:'行動',t:'いま気になっていることを、次にやる小さな一歩に変える'}];
+  var cat='all',addCat='身体',cur=null,custom=load('kn_custom',[]),favs=load('kn_favs',[]);
+  $$('#cats .chip').forEach(function(b){b.onclick=function(){$$('#cats .chip').forEach(function(x){x.setAttribute('aria-pressed',x===b)});cat=b.dataset.c}});
+  $$('#addcats .chip').forEach(function(b){b.onclick=function(){$$('#addcats .chip').forEach(function(x){x.setAttribute('aria-pressed',x===b)});addCat=b.dataset.c}});
+  var LBL={'身体':'身体的','認知':'認知的','行動':'行動的'};
+  $('#pick').onclick=function(){
+    var pool=BASE.concat(custom).filter(function(x){return cat==='all'||x.c===cat});
+    if(pool.length>1&&cur)pool=pool.filter(function(x){return x.t!==cur.t});
+    cur=rnd(pool);
+    $('#cope').innerHTML='<small>'+LBL[cur.c]+'な対処法</small><strong>'+esc(cur.t)+'</strong>';
+    $('#mine').style.display='flex'};
+  $('#fav').onclick=function(){
+    if(!cur)return;
+    if(favs.some(function(f){return f.t===cur.t})){toast('すでに追加済みです');return}
+    favs.push(cur);save('kn_favs',favs);renderLists();toast('お気に入りに追加しました')};
+  $('#add').onclick=function(){
+    var v=$('#mytxt').value.trim();if(!v){toast('内容を入力してください');return}
+    custom.push({c:addCat,t:v});save('kn_custom',custom);$('#mytxt').value='';renderLists();toast('追加しました')};
+  function listHtml(a,key){
+    return a.map(function(x,i){return '<li><span>'+esc(x.t)+' <small style="color:var(--sub)">'+LBL[x.c]+'</small></span><button class="btn del small" data-k="'+key+'" data-i="'+i+'">削除</button></li>'}).join('')}
+  function renderLists(){
+    $('#favs').innerHTML=listHtml(favs,'f')||'<li class="empty" style="display:block">提案の「お気に入りに追加」で保存できます</li>';
+    $('#custom').innerHTML=listHtml(custom,'c');
+    $$('#favs .del,#custom .del').forEach(function(b){b.onclick=function(){
+      var a=b.dataset.k==='f'?favs:custom;a.splice(+b.dataset.i,1);save(b.dataset.k==='f'?'kn_favs':'kn_custom',a);renderLists()}})}
+
+  $$('.eg li button').forEach(function(b){b.onclick=function(){var ta=$('#'+b.dataset.ins);ta.value+=(ta.value?'\n':'')+b.textContent;ta.focus()}});
+  /* body log */
+  var PARTS=['頭','首・肩','背中・腰','お腹・胃','胸','手足','全体的なだるさ','その他'],QUALS=['ズキズキ（脈打つ）','ギューッ（締め付けられる）','重い','チクチク','じんじん','ピリピリ','鈍い痛み'];
+  function chks(id,a){$(id).innerHTML=a.map(function(x){return "<label class='chk'><input type='checkbox' value='"+x+"'><span>"+x+"</span></label>"}).join('')}
+  chks('#parts',PARTS);chks('#quals',QUALS);
+  var nrs=null,body=load('kn_body',[]);
+  var nh='';for(var n=0;n<=10;n++)nh+="<button type='button' aria-pressed='false' data-v='"+n+"'>"+n+"</button>";
+  $('#nrs').innerHTML=nh;
+  $$('#nrs button').forEach(function(b){b.onclick=function(){nrs=+b.dataset.v;$$('#nrs button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});$('#nrsv').textContent=nrs+' / 10'}});
+  function checked(id){return $$(id+' input:checked').map(function(i){return i.value})}
+  $('#bsave').onclick=function(){
+    var p=checked('#parts');
+    if(!p.length&&nrs===null){toast('部位か痛みの強さを選んでください');return}
+    body.unshift({date:new Date().toLocaleString('ja-JP'),parts:p,nrs:nrs,quals:checked('#quals'),trig:$('#bt').value.trim(),cog:$('#bc').value.trim(),cope:$('#bh').value.trim()});
+    save('kn_body',body);
+    $$('#parts input,#quals input').forEach(function(i){i.checked=false});
+    $$('#nrs button').forEach(function(x){x.setAttribute('aria-pressed','false')});nrs=null;$('#nrsv').textContent='未選択';
+    ['#bt','#bc','#bh'].forEach(function(s){$(s).value=''});
+    renderBody();toast('保存しました')};
+  function renderBody(){
+    var h='';
+    body.forEach(function(r,i){
+      h+='<div class="card rec"><h3>'+esc(r.parts.join('・')||'部位未選択')+'　強さ '+(r.nrs!==null?r.nrs+' / 10':'—')+'</h3><time>'+esc(r.date)+'</time><dl>'
+        +(r.quals.length?'<dt>痛みの質</dt><dd>'+esc(r.quals.join('、'))+'</dd>':'')
+        +(r.trig?'<dt>きっかけ・状況</dt><dd>'+esc(r.trig)+'</dd>':'')
+        +(r.cog?'<dt>そのときの考え</dt><dd>'+esc(r.cog)+'</dd>':'')
+        +(r.cope?'<dt>対処</dt><dd>'+esc(r.cope)+'</dd>':'')
+        +'</dl><button class="btn del small" data-i="'+i+'">削除</button></div>'});
+    $('#bl').innerHTML=h||'<p class="empty">まだ記録がありません。</p>';
+    $$('#bl .del').forEach(function(b){b.onclick=function(){if(confirm('この記録を削除しますか？')){body.splice(+b.dataset.i,1);save('kn_body',body);renderBody();toast('削除しました')}}})}
+
+  /* quick check */
+  var TIMES=['朝','昼','夕方・夜','就寝前','常時・1日中'],PAINS=[['なし','(0)'],['軽度','(1-3)'],['中等度','(4-6)'],['重度','(7-9)'],['激痛','(10)']],
+    MOODS=[['😄','絶好調/安定','絶好調'],['🙂','普通/まあまあ','普通'],['😟','モヤモヤ/不安','モヤモヤ'],['😠','不機嫌/イライラ','イライラ'],['😣','限界/どん底','限界']];
+  var qs={t:null,p:null,m:null},quick=load('kn_quick',[]);
+  function grp(id,key,items){
+    $(id).innerHTML=items.map(function(x,i){return "<button type='button' aria-pressed='false' data-v='"+i+"'>"+x+"</button>"}).join('');
+    $$(id+' button').forEach(function(b){b.onclick=function(){qs[key]=+b.dataset.v;$$(id+' button').forEach(function(y){y.setAttribute('aria-pressed',y===b)})}})}
+  grp('#qt','t',TIMES);
+  grp('#qp','p',PAINS.map(function(x){return x[0]+'<br><small>'+x[1]+'</small>'}));
+  grp('#qm','m',MOODS.map(function(x){return "<span class='em'>"+x[0]+'</span>'+x[1]}));
+  function two(v){return ('0'+v).slice(-2)}
+  function renderQuick(){
+    $('#qtl').innerHTML=quick.map(function(r,i){
+      var d=new Date(r.ts);
+      var s=(d.getMonth()+1)+'/'+d.getDate()+' '+two(d.getHours())+':'+two(d.getMinutes())+' ｜ 時間: '+r.t+' ｜ 痛み: '+r.p+' ｜ メンタル: '+r.m;
+      return '<li><span>'+esc(s)+'</span><button class="btn del small" data-i="'+i+'" aria-label="削除">削除</button></li>'}).join('')||'<li class="empty"><span class="empty">まだ記録がありません。上の3つを選んで記録しましょう。</span></li>';
+    $$('#qtl .del').forEach(function(b){b.onclick=function(){quick.splice(+b.dataset.i,1);save('kn_quick',quick);renderQuick()}})}
+  $('#qsave').onclick=function(){
+    if(qs.t===null||qs.p===null||qs.m===null){toast('3つとも選んでください');return}
+    quick.unshift({ts:Date.now(),t:TIMES[qs.t],p:PAINS[qs.p][0],m:MOODS[qs.m][0]+' '+MOODS[qs.m][2]});
+    save('kn_quick',quick);qs={t:null,p:null,m:null};
+    $$('.qg button').forEach(function(y){y.setAttribute('aria-pressed','false')});
+    renderQuick();toast('記録しました')};
+  $('#qdel').onclick=function(){if(quick.length&&confirm('クイックチェックの記録をすべて削除しますか？元に戻せません。')){quick=[];save('kn_quick',quick);renderQuick();toast('すべて削除しました')}};
+
+  /* backup / share */
+  function sk(r){return r.ts||Date.parse(r.date)||0}
+  function mergeList(a,b,kf){var seen={},add=0;a.forEach(function(x){seen[kf(x)]=1});b.forEach(function(x){var k=kf(x);if(!seen[k]){seen[k]=1;a.push(x);add++}});return add}
+  function sortNew(a){a.sort(function(x,y){return sk(y)-sk(x)})}
+  function stamp(){var d=new Date();return d.getFullYear()+two(d.getMonth()+1)+two(d.getDate())}
+  function fmtD(d){return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+two(d.getHours())+':'+two(d.getMinutes())}
+  function out(name,text,type){
+    var blob=new Blob([text],{type:type}),file=null;
+    try{file=new File([blob],name,{type:type})}catch(e){}
+    if(file&&navigator.maxTouchPoints>1&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file]}).catch(function(){});return}
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href)},2000);toast('書き出しました')}
+  $('#exp').onclick=function(){
+    out('kokoro-note-backup.json',JSON.stringify({app:'kokoro-note',v:1,exported:new Date().toISOString(),recs:recs,body:body,quick:quick,custom:custom,favs:favs}),'application/json')};
+  $('#impb').onclick=function(){$('#imp').click()};
+  $('#imp').onchange=function(e){
+    var f=e.target.files[0];if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var d=JSON.parse(rd.result);if(d.app!=='kokoro-note')throw 0;
+        var nb=(d.body||[]).map(function(x){x.parts=x.parts||[];x.quals=x.quals||[];if(x.nrs===undefined)x.nrs=null;return x});
+        var n=mergeList(recs,d.recs||[],function(x){return [x.date,x.title,x.fact,x.interp].join('|')});
+        n+=mergeList(body,nb,function(x){return [x.date,x.parts.join(),x.nrs,x.trig].join('|')});
+        n+=mergeList(quick,d.quick||[],function(x){return x.ts});
+        n+=mergeList(custom,d.custom||[],function(x){return x.c+x.t});
+        n+=mergeList(favs,d.favs||[],function(x){return x.t});
+        [recs,body,quick].forEach(sortNew);
+        save('kn_recs',recs);save('kn_body',body);save('kn_quick',quick);save('kn_custom',custom);save('kn_favs',favs);
+        renderRecs();renderBody();renderQuick();renderLists();
+        $('#impres').textContent=n+'件を追加しました（重複はスキップ）';toast(n+'件を追加しました');
+      }catch(err){$('#impres').textContent='読み込めませんでした。「記録を書き出す」で作ったファイルを選んでください。'}
+      e.target.value=''};
+    rd.readAsText(f)};
+  function cc(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}
+  $('#csv').onclick=function(){
+    var it=[];
+    quick.forEach(function(r){it.push({k:r.ts,r:[fmtD(new Date(r.ts)),'クイック',r.t,r.p,r.m,'','','','']})});
+    body.forEach(function(r){it.push({k:sk(r),r:[r.date,'詳細',r.parts.join('・'),r.nrs===null?'':r.nrs,'',r.quals.join('・'),r.trig,r.cog,r.cope]})});
+    it.sort(function(a,b){return a.k-b.k});
+    var rows=[['日時','種別','部位・時間帯','強さ・度合い','メンタル','痛みの質','きっかけ・状況','考え','対処']].concat(it.map(function(x){return x.r}));
+    out('kokoro-note-log-'+stamp()+'.csv','\ufeff'+rows.map(function(r){return r.map(cc).join(',')}).join('\r\n'),'text/csv')};
+
+  /* folder sync */
+  var FN='kokoro-note-sync.json',dirH=null,syncing=false,syncTimer=null;
+  function kR(x){return [x.date,x.title,x.fact,x.interp].join('|')}
+  function kB(x){return [x.date,x.parts.join(),x.nrs,x.trig].join('|')}
+  function kQ(x){return x.ts}
+  function kC(x){return x.c+x.t}
+  function kF(x){return x.t}
+  function nB(x){x.parts=x.parts||[];x.quals=x.quals||[];if(x.nrs===undefined)x.nrs=null;return x}
+  function ingest(d,replace){
+    var nb=(d.body||[]).map(nB),n=0;
+    if(replace){recs=d.recs||[];body=nb;quick=d.quick||[];custom=d.custom||[];favs=d.favs||[]}
+    else{n=mergeList(recs,d.recs||[],kR)+mergeList(body,nb,kB)+mergeList(quick,d.quick||[],kQ)+mergeList(custom,d.custom||[],kC)+mergeList(favs,d.favs||[],kF);[recs,body,quick].forEach(sortNew)}
+    quiet=true;save('kn_recs',recs);save('kn_body',body);save('kn_quick',quick);save('kn_custom',custom);save('kn_favs',favs);quiet=false;
+    renderRecs();renderBody();renderQuick();renderLists();return n}
+  function fst(t){$('#fst').textContent=t}
+  function fsUI(){var on=!!dirH;$('#fdir').hidden=on;$('#fnow').hidden=!on;$('#foff').hidden=!on;if(on)fst('連携中のフォルダ：'+dirH.name)}
+  function idb(){return new Promise(function(res,rej){var q=indexedDB.open('kn_fs',1);q.onupgradeneeded=function(){q.result.createObjectStore('h')};q.onsuccess=function(){res(q.result)};q.onerror=function(){rej(q.error)}})}
+  function idbGet(){return idb().then(function(d){return new Promise(function(res){var r=d.transaction('h').objectStore('h').get('dir');r.onsuccess=function(){res(r.result||null)};r.onerror=function(){res(null)}})})}
+  function idbSet(v){return idb().then(function(d){return new Promise(function(res,rej){var t=d.transaction('h','readwrite');t.objectStore('h').put(v,'dir');t.oncomplete=res;t.onerror=rej})})}
+  function idbDel(){return idb().then(function(d){return new Promise(function(res){var t=d.transaction('h','readwrite');t.objectStore('h').delete('dir');t.oncomplete=res;t.onerror=res})})}
+  async function doSync(){
+    if(!dirH||syncing)return;
+    syncing=true;
+    try{
+      if((await dirH.queryPermission({mode:'readwrite'}))!=='granted'){fst('「今すぐ同期」を押して、フォルダへのアクセスを許可してください');return}
+      var fh=null,remote=null;
+      try{fh=await dirH.getFileHandle(FN)}catch(e){if(e.name!=='NotFoundError')throw e}
+      if(fh){var tx=await (await fh.getFile()).text();if(tx.trim())remote=JSON.parse(tx)}
+      if(remote&&remote.app!=='kokoro-note'){fst('同期ファイルの形式が違うため、同期を中止しました');return}
+      var lu=load('kn_upd',0),ls=load('kn_sync',0),ru=remote?(remote.updated||0):0,wr=false,msg='';
+      if(remote&&ru>ls&&lu>ls){ingest(remote,false);lu=Date.now();save('kn_upd',lu);wr=true;msg='2つの記録を合流しました'}
+      else if(remote&&ru>lu){ingest(remote,true);save('kn_upd',ru);save('kn_sync',ru);msg='フォルダの記録を反映しました'}
+      else if(!remote||lu>ru)wr=true;
+      if(wr){var w=await (await dirH.getFileHandle(FN,{create:true})).createWritable();await w.write(JSON.stringify({app:'kokoro-note',v:2,updated:lu,recs:recs,body:body,quick:quick,custom:custom,favs:favs}));await w.close();save('kn_sync',lu)}
+      var d=new Date();fst('同期済み '+two(d.getHours())+':'+two(d.getMinutes())+(msg?'（'+msg+'）':''))
+    }catch(e){fst('同期できませんでした（'+(e.name||'エラー')+'）')}
+    finally{syncing=false}
+  }
+  onTouch=function(){clearTimeout(syncTimer);if(dirH)syncTimer=setTimeout(doSync,1500)};
+  $('#fdir').onclick=async function(){
+    if(!window.showDirectoryPicker){fst('このブラウザは未対応です。PCのChrome・Edgeで開いてください。スマホでは下の書き出し・読み込みを使います。');return}
+    try{dirH=await showDirectoryPicker({mode:'readwrite'});await idbSet(dirH);fsUI();await doSync()}
+    catch(e){if(e.name==='AbortError')return;dirH=null;fsUI();fst(e.name==='SecurityError'?'この画面ではフォルダを開けません。HTMLファイルを直接開くか、GitHub Pagesで開いてください。':'フォルダを開けませんでした（'+e.name+'）')}};
+  $('#fnow').onclick=async function(){
+    if(!dirH)return;
+    try{if((await dirH.queryPermission({mode:'readwrite'}))!=='granted'&&(await dirH.requestPermission({mode:'readwrite'}))!=='granted'){fst('アクセスが許可されませんでした');return}}catch(e){}
+    doSync()};
+  $('#foff').onclick=async function(){await idbDel();dirH=null;fsUI();fst('連携を解除しました（フォルダ内のファイルは残ります）')};
+  function initFolder(){
+    if(!window.showDirectoryPicker){fst('このブラウザではフォルダ連携は使えません（PCのChrome・Edgeで利用できます）。下の書き出し・読み込みをお使いください。');$('#fdir').hidden=true;return}
+    idbGet().then(function(h){if(h){dirH=h;fsUI();doSync()}}).catch(function(){});
+    document.addEventListener('visibilitychange',function(){if(!document.hidden)doSync()})}
+
+  renderBody();renderQuick();
+  renderRecs();renderLists();draw();initFolder();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+</script>
+</body>
+</html>
