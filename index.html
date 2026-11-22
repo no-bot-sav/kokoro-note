@@ -33,7 +33,7 @@ section{display:none}section.on{display:block}
 h2{font-size:1.15rem;margin:0 0 6px}
 .hint{color:var(--sub);font-size:.88rem;margin:0 0 14px}
 label{display:block;font-weight:600;font-size:.95rem;margin-bottom:4px}
-textarea,input[type=text]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:12px;resize:vertical}
+textarea,input[type=text],input[type=password]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:12px;resize:vertical}
 textarea:focus,input:focus,button:focus-visible{outline:3px solid var(--sage);outline-offset:2px}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.cols{grid-template-columns:1fr}}
@@ -74,13 +74,6 @@ ul.list li{padding:10px 0;border-bottom:1px dashed var(--line);display:flex;just
 .tl{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line)}.tl li{position:relative;padding:8px 0 8px 12px;font-size:.92rem;display:flex;justify-content:space-between;align-items:center;gap:8px}.tl li::before{content:"";position:absolute;left:-24px;top:18px;width:10px;height:10px;border-radius:50%;background:var(--sage)}.tl li.empty{display:block;padding-left:0}.tl li.empty::before{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#8fa89a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="こころ整理">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
 <header>
@@ -203,7 +196,7 @@ ul.list li{padding:10px 0;border-bottom:1px dashed var(--line);display:flex;just
 <section id="lg">
   <div class="card">
     <h2>これまでの記録</h2>
-    <p class="hint">内容はこの端末のブラウザ内にだけ保存されます。</p>
+    <p class="hint">内容はこの端末のブラウザ内に保存されます（連携を設定した場合は、連携先にも保存されます）。</p>
     <div id="recs"></div>
     <div class="row"><button class="btn del small" id="delall">すべて削除</button></div>
   </div>
@@ -212,6 +205,27 @@ ul.list li{padding:10px 0;border-bottom:1px dashed var(--line);display:flex;just
     <p class="hint">PCのChrome・Edgeで使えます。選んだフォルダに <b>kokoro-note-sync.json</b> を保存し、記録の追加・削除のたびに自動で同期します。OneDrive・Googleドライブ・iCloud・Dropboxなどの同期フォルダを選ぶと、ほかの端末と共有できます。</p>
     <div class="row" style="margin-top:0"><button class="btn" id="fdir">フォルダを選ぶ</button><button class="btn ghost" id="fnow" hidden>今すぐ同期</button><button class="btn del small" id="foff" hidden>連携を解除</button></div>
     <p class="hint" id="fst" role="status" style="margin:10px 0 0"></p>
+  </div>
+  <div class="card">
+    <h2>GitHub連携（自動同期）</h2>
+    <p class="hint">スマホ・PCのどちらでも使えます。GitHubのリポジトリに <b>kokoro-note-sync.json</b> を保存し、記録の追加・削除のたびに自動で同期します。記録の内容が入るため、必ず<b>非公開（Private）のリポジトリ</b>を使ってください。トークンはこの端末のブラウザ内にだけ保存されます。</p>
+    <div id="ghform">
+      <label for="ghrepo">リポジトリ（ユーザー名/リポジトリ名）</label>
+      <input type="text" id="ghrepo" placeholder="例：yourname/kokoro-data" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <label for="ghtok" style="margin-top:10px">アクセストークン</label>
+      <input type="password" id="ghtok" placeholder="github_pat_..." autocomplete="off" autocapitalize="off" spellcheck="false">
+      <details class="eg" style="margin-top:12px">
+        <summary>詳細設定（ふつうは変更不要）</summary>
+        <div style="padding:0 14px 14px">
+          <label for="ghbr">ブランチ</label>
+          <input type="text" id="ghbr" value="main" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <label for="ghpath" style="margin-top:10px">保存するファイル名</label>
+          <input type="text" id="ghpath" value="kokoro-note-sync.json" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+      </details>
+    </div>
+    <div class="row"><button class="btn" id="ghgo">GitHubと連携する</button><button class="btn ghost" id="ghnow" hidden>今すぐ同期</button><button class="btn del small" id="ghoff" hidden>連携を解除</button></div>
+    <p class="hint" id="ghst" role="status" style="margin:10px 0 0"></p>
   </div>
   <div class="card">
     <h2>バックアップと端末間の共有</h2>
@@ -230,7 +244,7 @@ ul.list li{padding:10px 0;border-bottom:1px dashed var(--line);display:flex;just
   var mem={};
   function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return mem[k]!==undefined?mem[k]:d}}
   var quiet=false,onTouch=function(){};
-  function save(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(!quiet&&k!=='kn_upd'&&k!=='kn_sync'){save('kn_upd',Date.now());onTouch()}}
+  function save(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(!quiet&&k!=='kn_upd'&&k!=='kn_sync'&&k!=='kn_gsync'&&k!=='kn_gh'){save('kn_upd',Date.now());onTouch()}}
   function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},1800)}
   function rnd(a){return a[Math.floor(Math.random()*a.length)]}
@@ -468,7 +482,7 @@ ul.list li{padding:10px 0;border-bottom:1px dashed var(--line);display:flex;just
     }catch(e){fst('同期できませんでした（'+(e.name||'エラー')+'）')}
     finally{syncing=false}
   }
-  onTouch=function(){clearTimeout(syncTimer);if(dirH)syncTimer=setTimeout(doSync,1500)};
+  onTouch=function(){clearTimeout(syncTimer);if(dirH)syncTimer=setTimeout(doSync,1500);clearTimeout(ghTimer);if(gh)ghTimer=setTimeout(function(){ghSync()},2500)};
   $('#fdir').onclick=async function(){
     if(!window.showDirectoryPicker){fst('このブラウザは未対応です。PCのChrome・Edgeで開いてください。スマホでは下の書き出し・読み込みを使います。');return}
     try{dirH=await showDirectoryPicker({mode:'readwrite'});await idbSet(dirH);fsUI();await doSync()}
@@ -483,12 +497,76 @@ ul.list li{padding:10px 0;border-bottom:1px dashed var(--line);display:flex;just
     idbGet().then(function(h){if(h){dirH=h;fsUI();doSync()}}).catch(function(){});
     document.addEventListener('visibilitychange',function(){if(!document.hidden)doSync()})}
 
+  /* github sync */
+  var gh=load('kn_gh',null),ghBusy=false,ghTimer=null;
+  function ghst(t){$('#ghst').textContent=t}
+  function ghUI(){var on=!!gh;$('#ghform').hidden=on;$('#ghgo').hidden=on;$('#ghnow').hidden=!on;$('#ghoff').hidden=!on;if(on)ghst('連携中：'+gh.repo+'（'+gh.branch+'）')}
+  function b64e(t){return btoa(unescape(encodeURIComponent(t)))}
+  function b64d(t){return decodeURIComponent(escape(atob(t.replace(/\s/g,''))))}
+  function ghApi(path,o){
+    o=o||{};
+    var h={'Accept':o.accept||'application/vnd.github+json','Authorization':'Bearer '+gh.token,'X-GitHub-Api-Version':'2022-11-28'};
+    if(o.body)h['Content-Type']='application/json';
+    return fetch('https://api.github.com/repos/'+gh.repo+path,{method:o.method||'GET',headers:h,body:o.body,cache:'no-store'})}
+  function ghErr(s){return s===401?'トークンが正しくないか、期限切れです':s===403?'権限が足りないか、アクセス制限中です（トークンの権限をご確認ください）':s===404?'リポジトリまたはブランチが見つかりません（名前やトークンの対象リポジトリをご確認ください）':s===409||s===422?'保存が競合しました。もう一度「今すぐ同期」を押してください':'GitHubとの通信に失敗しました（'+s+'）'}
+  async function ghGet(){
+    var url='/contents/'+encodeURI(gh.path)+'?ref='+encodeURIComponent(gh.branch);
+    var r=await ghApi(url);
+    if(r.status===404)return {sha:null,data:null};
+    if(!r.ok)throw {status:r.status};
+    var j=await r.json(),tx='';
+    if(j.content&&j.encoding==='base64')tx=b64d(j.content);
+    else{var r2=await ghApi(url,{accept:'application/vnd.github.raw+json'});if(!r2.ok)throw {status:r2.status};tx=await r2.text()}
+    return {sha:j.sha,data:tx.trim()?JSON.parse(tx):null}}
+  async function ghSync(retried){
+    if(!gh||ghBusy)return;
+    ghBusy=true;
+    try{
+      var g=await ghGet(),remote=g.data;
+      if(remote&&remote.app!=='kokoro-note'){ghst('同期ファイルの形式が違うため、同期を中止しました');return}
+      var lu=load('kn_upd',0),ls=load('kn_gsync',0),ru=remote?(remote.updated||0):0,wr=false,msg='';
+      if(remote&&ru>ls&&lu>ls){ingest(remote,false);lu=Date.now();save('kn_upd',lu);wr=true;msg='2つの記録を合流しました'}
+      else if(remote&&ru>lu){ingest(remote,true);save('kn_upd',ru);save('kn_gsync',ru);msg='GitHubの記録を反映しました'}
+      else if(!remote||lu>ru)wr=true;
+      if(wr){
+        var body_={message:'sync',content:b64e(JSON.stringify({app:'kokoro-note',v:2,updated:lu,recs:recs,body:body,quick:quick,custom:custom,favs:favs})),branch:gh.branch};
+        if(g.sha)body_.sha=g.sha;
+        var r=await ghApi('/contents/'+encodeURI(gh.path),{method:'PUT',body:JSON.stringify(body_)});
+        if((r.status===409||r.status===422)&&!retried){ghBusy=false;return await ghSync(true)}
+        if(!r.ok)throw {status:r.status};
+        save('kn_gsync',lu)}
+      var d=new Date();ghst('同期済み '+two(d.getHours())+':'+two(d.getMinutes())+(msg?'（'+msg+'）':''));
+      if(msg&&dirH)doSync()
+    }catch(e){
+      if(e&&e.status)ghst('同期できませんでした：'+ghErr(e.status));
+      else if(e instanceof TypeError)ghst('GitHubに接続できませんでした（オフラインの可能性があります）');
+      else ghst('同期できませんでした（'+((e&&e.name)||'エラー')+'）')}
+    finally{ghBusy=false}
+  }
+  $('#ghgo').onclick=async function(){
+    var repo=$('#ghrepo').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\.git$/,'').replace(/\/+$/,''),tok=$('#ghtok').value.trim();
+    var br=$('#ghbr').value.trim()||'main',pa=$('#ghpath').value.trim().replace(/^\/+/,'')||'kokoro-note-sync.json';
+    if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){ghst('リポジトリは「ユーザー名/リポジトリ名」の形で入力してください');return}
+    if(!tok){ghst('アクセストークンを入力してください');return}
+    gh={repo:repo,token:tok,branch:br,path:pa};
+    ghst('確認中…');
+    try{
+      var r=await ghApi('');
+      if(!r.ok){gh=null;ghst(ghErr(r.status));return}
+      var info=await r.json();
+      if(!info.private&&!confirm('このリポジトリは公開（Public）です。記録の内容が誰にでも読める状態になります。非公開のリポジトリを使うことを強くおすすめします。それでも連携しますか？')){gh=null;ghst('連携を中止しました');return}
+      save('kn_gh',gh);$('#ghtok').value='';ghUI();await ghSync()
+    }catch(e){gh=null;ghst(e instanceof TypeError?'GitHubに接続できませんでした（オフラインの可能性があります）':'連携できませんでした（'+((e&&e.name)||'エラー')+'）')}};
+  $('#ghnow').onclick=function(){ghSync()};
+  $('#ghoff').onclick=function(){save('kn_gh',null);save('kn_gsync',0);gh=null;ghUI();ghst('連携を解除しました（GitHub上のファイルとトークンの有効期限はそのままです）')};
+  function initGh(){
+    if(gh){ghUI();ghSync()}
+    document.addEventListener('visibilitychange',function(){if(!document.hidden&&gh)ghSync()});
+    window.addEventListener('online',function(){if(gh)ghSync()})}
+
   renderBody();renderQuick();
-  renderRecs();renderLists();draw();initFolder();
+  renderRecs();renderLists();draw();initFolder();initGh();
 })();
-</script>
-<script>
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 </script>
 </body>
 </html>
